@@ -2,7 +2,6 @@
 
 [![Tests](https://github.com/philiprehberger/php-color/actions/workflows/tests.yml/badge.svg)](https://github.com/philiprehberger/php-color/actions/workflows/tests.yml)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/philiprehberger/php-color.svg)](https://packagist.org/packages/philiprehberger/php-color)
-[![Total Downloads](https://img.shields.io/packagist/dt/philiprehberger/php-color.svg)](https://packagist.org/packages/philiprehberger/php-color)
 [![PHP Version Require](https://img.shields.io/packagist/php-v/philiprehberger/php-color.svg)](https://packagist.org/packages/philiprehberger/php-color)
 [![License](https://img.shields.io/github/license/philiprehberger/php-color)](LICENSE)
 
