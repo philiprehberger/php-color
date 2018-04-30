@@ -4,7 +4,7 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/philiprehberger/php-color.svg)](https://packagist.org/packages/philiprehberger/php-color)
 [![License](https://img.shields.io/github/license/philiprehberger/php-color)](LICENSE)
 
-Color parsing, conversion, manipulation, and WCAG contrast checking for PHP. Zero external dependencies.
+Color parsing, conversion, manipulation, and WCAG contrast checking.
 
 ---
 
