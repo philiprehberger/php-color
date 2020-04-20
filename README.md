@@ -27,6 +27,7 @@ $color = Color::hex('#ff6347');       // From hex
 $color = Color::rgb(255, 99, 71);    // From RGB
 $color = Color::hsl(9, 100, 64);     // From HSL
 $color = Color::named('tomato');      // From CSS name
+$color = Color::random();            // Random color
 ```
 
 ### Converting Colors
@@ -57,6 +58,19 @@ $color->grayscale();        // Convert to grayscale
 $red = Color::hex('#ff0000');
 $blue = Color::hex('#0000ff');
 $red->mix($blue, 0.5);     // Mix two colors
+```
+
+### Color Analysis
+
+```php
+$color = Color::hex('#3366cc');
+
+$color->isLight();  // false
+$color->isDark();   // true
+
+$red = Color::hex('#ff0000');
+$blue = Color::hex('#0000ff');
+$red->distance($blue);  // CIE76 Delta E perceptual distance
 ```
 
 ### WCAG Contrast Checking
@@ -97,6 +111,7 @@ Palette::tints($color, 5);          // 5 progressively lighter tints
 | `Color::rgb(int $r, int $g, int $b, float $alpha = 1.0): Color` | Create from RGB values |
 | `Color::hsl(float $h, float $s, float $l, float $alpha = 1.0): Color` | Create from HSL values |
 | `Color::named(string $name): Color` | Create from CSS named color |
+| `Color::random(): Color` | Generate a random color |
 | `->lighten(float $percent): Color` | Lighten by percentage |
 | `->darken(float $percent): Color` | Darken by percentage |
 | `->saturate(float $percent): Color` | Increase saturation |
@@ -104,6 +119,9 @@ Palette::tints($color, 5);          // 5 progressively lighter tints
 | `->mix(Color $other, float $weight = 0.5): Color` | Mix with another color |
 | `->invert(): Color` | Invert the color |
 | `->grayscale(): Color` | Convert to grayscale |
+| `->distance(Color $other): float` | CIE76 Delta E perceptual distance |
+| `->isLight(): bool` | True if relative luminance > 0.5 |
+| `->isDark(): bool` | True if relative luminance <= 0.5 |
 | `->contrastRatio(Color\|string $other): float` | WCAG contrast ratio (1.0-21.0) |
 | `->meetsWcagAA(Color\|string $background): bool` | Meets WCAG AA (4.5:1) |
 | `->meetsWcagAAA(Color\|string $background): bool` | Meets WCAG AAA (7:1) |
