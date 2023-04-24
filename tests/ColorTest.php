@@ -380,4 +380,238 @@ class ColorTest extends TestCase
         // With 10 random colors, at least 2 should be different
         $this->assertGreaterThan(1, count(array_unique($colors)));
     }
+
+    // -------------------------------------------------------------------------
+    // Blend mode tests
+    // -------------------------------------------------------------------------
+
+    public function test_blend_multiply_white_and_black(): void
+    {
+        $white = Color::hex('#ffffff');
+        $black = Color::hex('#000000');
+
+        $result = $white->blend($black, 'multiply');
+
+        $this->assertSame('#000000', $result->toHex());
+    }
+
+    public function test_blend_multiply_white_and_white(): void
+    {
+        $white = Color::hex('#ffffff');
+
+        $result = $white->blend($white, 'multiply');
+
+        $this->assertSame('#ffffff', $result->toHex());
+    }
+
+    public function test_blend_multiply_color_with_white(): void
+    {
+        $red = Color::hex('#ff0000');
+        $white = Color::hex('#ffffff');
+
+        $result = $red->blend($white, 'multiply');
+
+        $this->assertSame('#ff0000', $result->toHex());
+    }
+
+    public function test_blend_screen_black_and_black(): void
+    {
+        $black = Color::hex('#000000');
+
+        $result = $black->blend($black, 'screen');
+
+        $this->assertSame('#000000', $result->toHex());
+    }
+
+    public function test_blend_screen_black_and_white(): void
+    {
+        $black = Color::hex('#000000');
+        $white = Color::hex('#ffffff');
+
+        $result = $black->blend($white, 'screen');
+
+        $this->assertSame('#ffffff', $result->toHex());
+    }
+
+    public function test_blend_overlay_gray_with_gray(): void
+    {
+        $gray = Color::rgb(128, 128, 128);
+
+        $result = $gray->blend($gray, 'overlay');
+
+        // Overlay of 50% gray with itself: since 128/255 ~= 0.502 >= 0.5,
+        // formula: 1 - 2*(1-a)*(1-b), result should be roughly 128
+        $arr = $result->toArray();
+        $this->assertEqualsWithDelta(128, $arr['r'], 2);
+        $this->assertEqualsWithDelta(128, $arr['g'], 2);
+        $this->assertEqualsWithDelta(128, $arr['b'], 2);
+    }
+
+    public function test_blend_darken(): void
+    {
+        $red = Color::hex('#ff3366');
+        $blue = Color::hex('#3366ff');
+
+        $result = $red->blend($blue, 'darken');
+
+        $this->assertSame(min(255, 51), $result->getRed());
+        $this->assertSame(min(51, 102), $result->getGreen());
+        $this->assertSame(min(102, 255), $result->getBlue());
+    }
+
+    public function test_blend_lighten(): void
+    {
+        $red = Color::hex('#ff3366');
+        $blue = Color::hex('#3366ff');
+
+        $result = $red->blend($blue, 'lighten');
+
+        $this->assertSame(max(255, 51), $result->getRed());
+        $this->assertSame(max(51, 102), $result->getGreen());
+        $this->assertSame(max(102, 255), $result->getBlue());
+    }
+
+    public function test_blend_unknown_mode_throws_exception(): void
+    {
+        $color = Color::hex('#ff0000');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown blend mode: unknown');
+
+        $color->blend($color, 'unknown');
+    }
+
+    // -------------------------------------------------------------------------
+    // Gradient tests
+    // -------------------------------------------------------------------------
+
+    public function test_gradient_rgb_black_to_white(): void
+    {
+        $black = Color::hex('#000000');
+        $white = Color::hex('#ffffff');
+
+        $gradient = Palette::gradient($black, $white, 5);
+
+        $this->assertCount(5, $gradient);
+        $this->assertSame('#000000', $gradient[0]->toHex());
+        $this->assertSame('#404040', $gradient[1]->toHex());
+        $this->assertSame('#808080', $gradient[2]->toHex());
+        $this->assertSame('#bfbfbf', $gradient[3]->toHex());
+        $this->assertSame('#ffffff', $gradient[4]->toHex());
+    }
+
+    public function test_gradient_rgb_evenly_spaced(): void
+    {
+        $black = Color::hex('#000000');
+        $white = Color::hex('#ffffff');
+
+        $gradient = Palette::gradient($black, $white, 5);
+
+        // Check that spacing between steps is roughly equal
+        for ($i = 0; $i < 4; $i++) {
+            $diff = $gradient[$i + 1]->getRed() - $gradient[$i]->getRed();
+            $this->assertEqualsWithDelta(64, $diff, 1);
+        }
+    }
+
+    public function test_gradient_hsl(): void
+    {
+        $red = Color::hex('#ff0000');
+        $green = Color::hsl(120, 100, 50);
+
+        $gradient = Palette::gradient($red, $green, 3, 'hsl');
+
+        $this->assertCount(3, $gradient);
+        $this->assertSame('#ff0000', $gradient[0]->toHex());
+        // Middle step should be at hue 60 (yellow)
+        $this->assertSame('#ffff00', $gradient[1]->toHex());
+    }
+
+    public function test_gradient_minimum_steps(): void
+    {
+        $black = Color::hex('#000000');
+        $white = Color::hex('#ffffff');
+
+        $gradient = Palette::gradient($black, $white, 2);
+
+        $this->assertCount(2, $gradient);
+        $this->assertSame('#000000', $gradient[0]->toHex());
+        $this->assertSame('#ffffff', $gradient[1]->toHex());
+    }
+
+    public function test_gradient_throws_for_less_than_two_steps(): void
+    {
+        $color = Color::hex('#ff0000');
+
+        $this->expectException(InvalidArgumentException::class);
+
+        Palette::gradient($color, $color, 1);
+    }
+
+    public function test_gradient_throws_for_unknown_space(): void
+    {
+        $color = Color::hex('#ff0000');
+
+        $this->expectException(InvalidArgumentException::class);
+
+        Palette::gradient($color, $color, 3, 'lab');
+    }
+
+    // -------------------------------------------------------------------------
+    // Split-complementary tests
+    // -------------------------------------------------------------------------
+
+    public function test_split_complementary_returns_three_colors(): void
+    {
+        $color = Color::hex('#ff0000');
+        $palette = Palette::splitComplementary($color);
+
+        $this->assertCount(3, $palette);
+        $this->assertSame('#ff0000', $palette[0]->toHex());
+    }
+
+    public function test_split_complementary_hue_offsets(): void
+    {
+        // Use a color with known hue: red = 0 degrees
+        $color = Color::hsl(0, 100, 50);
+        $palette = Palette::splitComplementary($color);
+
+        // base+150 should be hue 150, base+210 should be hue 210
+        $hsl1 = $palette[1]->toArray();
+        $hsl2 = $palette[2]->toArray();
+
+        // Verify by creating expected colors directly
+        $expected1 = Color::hsl(150, 100, 50);
+        $expected2 = Color::hsl(210, 100, 50);
+
+        $this->assertSame($expected1->toHex(), $palette[1]->toHex());
+        $this->assertSame($expected2->toHex(), $palette[2]->toHex());
+    }
+
+    // -------------------------------------------------------------------------
+    // Tetradic tests
+    // -------------------------------------------------------------------------
+
+    public function test_tetradic_returns_four_colors(): void
+    {
+        $color = Color::hex('#ff0000');
+        $palette = Palette::tetradic($color);
+
+        $this->assertCount(4, $palette);
+        $this->assertSame('#ff0000', $palette[0]->toHex());
+    }
+
+    public function test_tetradic_hue_offsets(): void
+    {
+        $color = Color::hsl(0, 100, 50);
+        $palette = Palette::tetradic($color);
+
+        $expected90 = Color::hsl(90, 100, 50);
+        $expected180 = Color::hsl(180, 100, 50);
+        $expected270 = Color::hsl(270, 100, 50);
+
+        $this->assertSame($expected90->toHex(), $palette[1]->toHex());
+        $this->assertSame($expected180->toHex(), $palette[2]->toHex());
+        $this->assertSame($expected270->toHex(), $palette[3]->toHex());
+    }
 }
