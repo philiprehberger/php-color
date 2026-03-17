@@ -2,12 +2,13 @@
     "name": "philiprehberger/php-color",
     "description": "Color parsing, conversion, manipulation, and WCAG contrast checking",
     "type": "library",
-    "keywords": ["color", "hex", "rgb", "hsl", "wcag", "contrast", "palette", "css-colors"],
+    "keywords": ["color", "hex", "rgb", "hsl", "wcag", "contrast"],
     "homepage": "https://github.com/philiprehberger/php-color",
     "license": "MIT",
     "authors": [
         {
             "name": "Philip Rehberger",
+            "email": "me@philiprehberger.com",
             "role": "Developer"
         }
     ],
