@@ -6,23 +6,15 @@
 
 Color parsing, conversion, manipulation, and WCAG contrast checking.
 
----
-
 ## Requirements
 
-| Dependency | Version |
-|------------|---------|
-| PHP        | ^8.2    |
-
----
+- PHP 8.2+
 
 ## Installation
 
 ```bash
 composer require philiprehberger/php-color
 ```
-
----
 
 ## Usage
 
@@ -95,8 +87,6 @@ Palette::shades($color, 5);         // 5 progressively darker shades
 Palette::tints($color, 5);          // 5 progressively lighter tints
 ```
 
----
-
 ## API
 
 ### Color
@@ -131,8 +121,6 @@ Palette::tints($color, 5);          // 5 progressively lighter tints
 | `Palette::triadic(Color $color): array` | Three triadic colors |
 | `Palette::shades(Color $color, int $count = 5): array` | Progressive darker shades |
 | `Palette::tints(Color $color, int $count = 5): array` | Progressive lighter tints |
-
----
 
 ## Development
 
