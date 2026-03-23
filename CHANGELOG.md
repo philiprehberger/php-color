@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-03-22
+
+### Added
+- `distance()` method for perceptual color distance using CIE76 Delta E
+- `isLight()` and `isDark()` convenience methods based on relative luminance
+- `random()` static factory method for generating random colors
+
 ## [1.0.3] - 2026-03-17
 
 ### Changed

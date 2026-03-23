@@ -79,6 +79,14 @@ final readonly class Color
         return self::hex($hex);
     }
 
+    /**
+     * Generate a random color.
+     */
+    public static function random(): static
+    {
+        return new self(random_int(0, 255), random_int(0, 255), random_int(0, 255), 1.0);
+    }
+
     // -------------------------------------------------------------------------
     // Manipulation methods
     // -------------------------------------------------------------------------
@@ -178,6 +186,41 @@ final readonly class Color
         $rgb = Converter::hslToRgb($hsl['h'], 0, $hsl['l']);
 
         return new self($rgb['r'], $rgb['g'], $rgb['b'], $this->alpha);
+    }
+
+    // -------------------------------------------------------------------------
+    // Analysis methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * Calculate the perceptual distance to another color using the CIE76 Delta E formula.
+     */
+    public function distance(self $other): float
+    {
+        $lab1 = $this->toLab();
+        $lab2 = $other->toLab();
+
+        return sqrt(
+            ($lab1['L'] - $lab2['L']) ** 2
+            + ($lab1['a'] - $lab2['a']) ** 2
+            + ($lab1['b'] - $lab2['b']) ** 2,
+        );
+    }
+
+    /**
+     * Determine if this color is light (relative luminance > 0.5).
+     */
+    public function isLight(): bool
+    {
+        return $this->relativeLuminance() > 0.5;
+    }
+
+    /**
+     * Determine if this color is dark (relative luminance <= 0.5).
+     */
+    public function isDark(): bool
+    {
+        return $this->relativeLuminance() <= 0.5;
     }
 
     // -------------------------------------------------------------------------
@@ -338,5 +381,60 @@ final readonly class Color
         return $value <= 0.04045
             ? $value / 12.92
             : (($value + 0.055) / 1.055) ** 2.4;
+    }
+
+    /**
+     * Convert this color to CIE XYZ color space.
+     *
+     * @return array{X: float, Y: float, Z: float}
+     */
+    private function toXyz(): array
+    {
+        $r = $this->linearize($this->red / 255);
+        $g = $this->linearize($this->green / 255);
+        $b = $this->linearize($this->blue / 255);
+
+        return [
+            'X' => $r * 0.4124564 + $g * 0.3575761 + $b * 0.1804375,
+            'Y' => $r * 0.2126729 + $g * 0.7151522 + $b * 0.0721750,
+            'Z' => $r * 0.0193339 + $g * 0.1191920 + $b * 0.9503041,
+        ];
+    }
+
+    /**
+     * Convert this color to CIE Lab color space using D65 illuminant.
+     *
+     * @return array{L: float, a: float, b: float}
+     */
+    private function toLab(): array
+    {
+        $xyz = $this->toXyz();
+
+        // D65 reference white
+        $xn = 0.95047;
+        $yn = 1.00000;
+        $zn = 1.08883;
+
+        $fx = $this->labF($xyz['X'] / $xn);
+        $fy = $this->labF($xyz['Y'] / $yn);
+        $fz = $this->labF($xyz['Z'] / $zn);
+
+        return [
+            'L' => 116 * $fy - 16,
+            'a' => 500 * ($fx - $fy),
+            'b' => 200 * ($fy - $fz),
+        ];
+    }
+
+    /**
+     * CIE Lab transfer function.
+     */
+    private function labF(float $t): float
+    {
+        $delta = 6 / 29;
+
+        return $t > $delta ** 3
+            ? $t ** (1 / 3)
+            : $t / (3 * $delta ** 2) + 4 / 29;
     }
 }

@@ -270,4 +270,114 @@ class ColorTest extends TestCase
 
         $this->assertSame(21.0, $color->contrastRatio('#ffffff'));
     }
+
+    public function test_distance_identical_colors(): void
+    {
+        $color = Color::hex('#ff0000');
+
+        $this->assertSame(0.0, $color->distance($color));
+    }
+
+    public function test_distance_black_and_white(): void
+    {
+        $black = Color::hex('#000000');
+        $white = Color::hex('#ffffff');
+
+        $distance = $black->distance($white);
+
+        // CIE76 Delta E between black and white is approximately 100
+        $this->assertGreaterThan(95, $distance);
+        $this->assertLessThan(105, $distance);
+    }
+
+    public function test_distance_is_symmetric(): void
+    {
+        $red = Color::hex('#ff0000');
+        $blue = Color::hex('#0000ff');
+
+        $this->assertSame($red->distance($blue), $blue->distance($red));
+    }
+
+    public function test_is_light_with_white(): void
+    {
+        $white = Color::hex('#ffffff');
+
+        $this->assertTrue($white->isLight());
+    }
+
+    public function test_is_light_with_black(): void
+    {
+        $black = Color::hex('#000000');
+
+        $this->assertFalse($black->isLight());
+    }
+
+    public function test_is_light_with_medium_gray(): void
+    {
+        // #808080 has luminance ~0.216, so it should be dark
+        $gray = Color::hex('#808080');
+
+        $this->assertFalse($gray->isLight());
+
+        // #bbbbbb has luminance ~0.486, still dark
+        // #c0c0c0 has luminance ~0.527, should be light
+        $lightGray = Color::hex('#c0c0c0');
+
+        $this->assertTrue($lightGray->isLight());
+    }
+
+    public function test_is_dark_with_black(): void
+    {
+        $black = Color::hex('#000000');
+
+        $this->assertTrue($black->isDark());
+    }
+
+    public function test_is_dark_with_white(): void
+    {
+        $white = Color::hex('#ffffff');
+
+        $this->assertFalse($white->isDark());
+    }
+
+    public function test_is_dark_is_inverse_of_is_light(): void
+    {
+        $colors = [
+            Color::hex('#ff0000'),
+            Color::hex('#00ff00'),
+            Color::hex('#0000ff'),
+            Color::hex('#808080'),
+            Color::hex('#ffffff'),
+            Color::hex('#000000'),
+        ];
+
+        foreach ($colors as $color) {
+            $this->assertNotSame($color->isLight(), $color->isDark());
+        }
+    }
+
+    public function test_random_returns_valid_color(): void
+    {
+        $color = Color::random();
+
+        $this->assertInstanceOf(Color::class, $color);
+        $this->assertGreaterThanOrEqual(0, $color->getRed());
+        $this->assertLessThanOrEqual(255, $color->getRed());
+        $this->assertGreaterThanOrEqual(0, $color->getGreen());
+        $this->assertLessThanOrEqual(255, $color->getGreen());
+        $this->assertGreaterThanOrEqual(0, $color->getBlue());
+        $this->assertLessThanOrEqual(255, $color->getBlue());
+        $this->assertSame(1.0, $color->getAlpha());
+    }
+
+    public function test_random_returns_different_colors(): void
+    {
+        $colors = [];
+        for ($i = 0; $i < 10; $i++) {
+            $colors[] = Color::random()->toHex();
+        }
+
+        // With 10 random colors, at least 2 should be different
+        $this->assertGreaterThan(1, count(array_unique($colors)));
+    }
 }
