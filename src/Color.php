@@ -170,6 +170,55 @@ final readonly class Color
     }
 
     /**
+     * Blend this color with another using a CSS blend mode.
+     *
+     * Supported modes: multiply, screen, overlay, darken, lighten.
+     *
+     * @throws \InvalidArgumentException If the blend mode is unknown
+     */
+    public function blend(self $other, string $mode): self
+    {
+        $a = [$this->red / 255, $this->green / 255, $this->blue / 255];
+        $b = [$other->red / 255, $other->green / 255, $other->blue / 255];
+
+        $result = match ($mode) {
+            'multiply' => [
+                $a[0] * $b[0],
+                $a[1] * $b[1],
+                $a[2] * $b[2],
+            ],
+            'screen' => [
+                1 - (1 - $a[0]) * (1 - $b[0]),
+                1 - (1 - $a[1]) * (1 - $b[1]),
+                1 - (1 - $a[2]) * (1 - $b[2]),
+            ],
+            'overlay' => [
+                $a[0] < 0.5 ? 2 * $a[0] * $b[0] : 1 - 2 * (1 - $a[0]) * (1 - $b[0]),
+                $a[1] < 0.5 ? 2 * $a[1] * $b[1] : 1 - 2 * (1 - $a[1]) * (1 - $b[1]),
+                $a[2] < 0.5 ? 2 * $a[2] * $b[2] : 1 - 2 * (1 - $a[2]) * (1 - $b[2]),
+            ],
+            'darken' => [
+                min($a[0], $b[0]),
+                min($a[1], $b[1]),
+                min($a[2], $b[2]),
+            ],
+            'lighten' => [
+                max($a[0], $b[0]),
+                max($a[1], $b[1]),
+                max($a[2], $b[2]),
+            ],
+            default => throw new \InvalidArgumentException("Unknown blend mode: {$mode}"),
+        };
+
+        return new self(
+            Converter::clampInt((int) round($result[0] * 255)),
+            Converter::clampInt((int) round($result[1] * 255)),
+            Converter::clampInt((int) round($result[2] * 255)),
+            $this->alpha,
+        );
+    }
+
+    /**
      * Invert the color.
      */
     public function invert(): self

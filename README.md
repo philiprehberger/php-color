@@ -1,8 +1,12 @@
 # PHP Color
 
 [![Tests](https://github.com/philiprehberger/php-color/actions/workflows/tests.yml/badge.svg)](https://github.com/philiprehberger/php-color/actions/workflows/tests.yml)
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/philiprehberger/php-color.svg)](https://packagist.org/packages/philiprehberger/php-color)
+[![Packagist Version](https://img.shields.io/packagist/v/philiprehberger/php-color.svg)](https://packagist.org/packages/philiprehberger/php-color)
+[![GitHub Release](https://img.shields.io/github/v/release/philiprehberger/php-color)](https://github.com/philiprehberger/php-color/releases)
+[![Last Updated](https://img.shields.io/github/last-commit/philiprehberger/php-color)](https://github.com/philiprehberger/php-color/commits/main)
 [![License](https://img.shields.io/github/license/philiprehberger/php-color)](LICENSE)
+[![Bug Reports](https://img.shields.io/github/issues/philiprehberger/php-color/bug)](https://github.com/philiprehberger/php-color/issues?q=label%3Abug)
+[![Feature Requests](https://img.shields.io/github/issues/philiprehberger/php-color/enhancement)](https://github.com/philiprehberger/php-color/issues?q=label%3Aenhancement)
 [![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ec6cb9)](https://github.com/sponsors/philiprehberger)
 
 Color parsing, conversion, manipulation, and WCAG contrast checking.
@@ -61,6 +65,19 @@ $blue = Color::hex('#0000ff');
 $red->mix($blue, 0.5);     // Mix two colors
 ```
 
+### Blending Colors
+
+```php
+$red = Color::hex('#ff0000');
+$blue = Color::hex('#0000ff');
+
+$red->blend($blue, 'multiply');   // Multiply blend
+$red->blend($blue, 'screen');     // Screen blend
+$red->blend($blue, 'overlay');    // Overlay blend
+$red->blend($blue, 'darken');     // Darken blend
+$red->blend($blue, 'lighten');    // Lighten blend
+```
+
 ### Color Analysis
 
 ```php
@@ -95,11 +112,23 @@ use PhilipRehberger\Color\Palette;
 
 $color = Color::hex('#ff6347');
 
-Palette::complementary($color);     // [original, complement]
-Palette::analogous($color);         // [left, original, right]
-Palette::triadic($color);           // [original, +120deg, +240deg]
-Palette::shades($color, 5);         // 5 progressively darker shades
-Palette::tints($color, 5);          // 5 progressively lighter tints
+Palette::complementary($color);        // [original, complement]
+Palette::analogous($color);            // [left, original, right]
+Palette::triadic($color);              // [original, +120deg, +240deg]
+Palette::splitComplementary($color);   // [original, +150deg, +210deg]
+Palette::tetradic($color);             // [original, +90deg, +180deg, +270deg]
+Palette::shades($color, 5);            // 5 progressively darker shades
+Palette::tints($color, 5);             // 5 progressively lighter tints
+```
+
+### Generating Gradients
+
+```php
+$black = Color::hex('#000000');
+$white = Color::hex('#ffffff');
+
+Palette::gradient($black, $white, 5);          // 5-step RGB gradient
+Palette::gradient($black, $white, 5, 'hsl');   // 5-step HSL gradient
 ```
 
 ## API
@@ -118,6 +147,7 @@ Palette::tints($color, 5);          // 5 progressively lighter tints
 | `->saturate(float $percent): Color` | Increase saturation |
 | `->desaturate(float $percent): Color` | Decrease saturation |
 | `->mix(Color $other, float $weight = 0.5): Color` | Mix with another color |
+| `->blend(Color $other, string $mode): Color` | Blend with another color using a CSS blend mode |
 | `->invert(): Color` | Invert the color |
 | `->grayscale(): Color` | Convert to grayscale |
 | `->distance(Color $other): float` | CIE76 Delta E perceptual distance |
@@ -138,6 +168,9 @@ Palette::tints($color, 5);          // 5 progressively lighter tints
 | `Palette::complementary(Color $color): array` | Complementary pair |
 | `Palette::analogous(Color $color, float $angle = 30.0): array` | Three analogous colors |
 | `Palette::triadic(Color $color): array` | Three triadic colors |
+| `Palette::splitComplementary(Color $color): array` | Split-complementary triad |
+| `Palette::tetradic(Color $color): array` | Tetradic (rectangular) quartet |
+| `Palette::gradient(Color $start, Color $end, int $steps, string $space = 'rgb'): array` | Interpolated color gradient |
 | `Palette::shades(Color $color, int $count = 5): array` | Progressive darker shades |
 | `Palette::tints(Color $color, int $count = 5): array` | Progressive lighter tints |
 
@@ -147,9 +180,15 @@ Palette::tints($color, 5);          // 5 progressively lighter tints
 composer install
 vendor/bin/phpunit
 vendor/bin/pint --test
-vendor/bin/phpstan analyse
 ```
+
+## Support
+
+If you find this package useful, consider giving it a star on GitHub — it helps motivate continued maintenance and development.
+
+[![LinkedIn](https://img.shields.io/badge/Philip%20Rehberger-LinkedIn-0A66C2?logo=linkedin)](https://www.linkedin.com/in/philiprehberger)
+[![More packages](https://img.shields.io/badge/more-open%20source%20packages-blue)](https://philiprehberger.com/open-source-packages)
 
 ## License
 
-MIT
+[MIT](LICENSE)

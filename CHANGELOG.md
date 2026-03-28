@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-03-27
+
+### Added
+- `Color::blend()` with multiply, screen, overlay, darken, and lighten blend modes
+- `Palette::gradient()` for generating color gradients with RGB and HSL interpolation
+- `Palette::splitComplementary()` and `Palette::tetradic()` palette generators
+
 ## [1.1.0] - 2026-03-22
 
 ### Added
